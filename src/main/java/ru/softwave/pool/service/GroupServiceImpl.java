@@ -109,30 +109,34 @@ public class GroupServiceImpl implements GroupService {
 
     Trainer oldTrainer = group.getTrainer();
     if (oldTrainer != null) {
-      if (checkTrainerOnMinTimeEnough(oldTrainer, getGroupTimeDurationInHrs(group))) {
-
-        addWorkHoursToTrainer(trainer, group);
-        group.setTrainer(trainer);
-
-        groupRepository.save(group);
-        releaseTrainerTime(oldTrainer, group);
-        trainerService.saveTrainer(oldTrainer);
-
-      } else {
-        throw new IllegalArgumentException(
-            "Unable to replace a trainer in a group: The current trainer will not have a minimum number of hours");
+      if (!checkTrainerOnMinTimeEnough(oldTrainer, getGroupTimeDurationInHrs(group))) {
+        log.warn("old trainer currentWorkTime less than minWorkTime trainer {}", trainer);
       }
+      addWorkHoursToTrainer(trainer, group);
+      releaseTrainerTime(oldTrainer, group);
+
+      trainerService.saveTrainer(oldTrainer);
+      group.setTrainer(trainer);
+
+      groupRepository.save(group);
+
+    } else {
+      addWorkHoursToTrainer(trainer, group);
+      group.setTrainer(trainer);
+      log.debug("saved group {}", group);
+      groupRepository.save(group);
     }
-    addWorkHoursToTrainer(trainer, group);
-    group.setTrainer(trainer);
-    log.debug("saved group {}", group);
-    groupRepository.save(group);
   }
 
   private void addWorkHoursToTrainer(Trainer trainer, Group group) {
+    log.debug("adding hours to trainer {}", trainer);
     trainer.setCurrentWorkWeekHours(
         (byte)
             (trainer.getCurrentWorkWeekHours() + getGroupTimeDurationInHrs(group) * WORKING_DAYS));
+    log.debug("added hours to trainer {}", trainer);
+    if (trainer.getCurrentWorkWeekHours() > trainer.getMaxWorkWeekHours()) {
+      log.warn("trainers current work time greater than maxWorkWeekHours  trainer : {}", trainer);
+    }
   }
 
   private void checkGroupOnTimeMultiples(Group group) {
@@ -157,6 +161,7 @@ public class GroupServiceImpl implements GroupService {
   }
 
   private void releaseTrainerTime(Trainer trainer, Group group) {
+    log.info("trainer is {}", trainer);
     trainer.setCurrentWorkWeekHours(
         (byte)
             (trainer.getCurrentWorkWeekHours() - getGroupTimeDurationInHrs(group) * WORKING_DAYS));
