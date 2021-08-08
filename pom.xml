@@ -12,7 +12,7 @@
     <artifactId>pool</artifactId>
     <version>0.0.1</version>
     <name>swimming-pool</name>
-    <description>basin application</description>
+    <description>swimpool application</description>
     <properties>
         <java.version>11</java.version>
     </properties>
