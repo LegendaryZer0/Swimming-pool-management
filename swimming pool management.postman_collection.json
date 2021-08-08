@@ -1,0 +1,469 @@
+{
+	"info": {
+		"_postman_id": "23bf777d-f2ef-4997-a50d-1a2c00e2ce49",
+		"name": "SoftWaveAccess swimming pool management",
+		"description": "**Примечание**: Пароль любого пользователя равен его username до @\n\nПример: \n\nusername: assasinqwe11@gmail.com \n\npassword: assasinqwe11\n\nКРОМE того, чей email начинается с undertale, у него пароль также включает @\n\n\n1) Сделана регистрация Посетителя, Тренера и Админа, однако, чтобы зарегистрировать админа или тренера, нужно самому быть админом, в базе уже вшиты тестовые данные, достаточно ввести их в Basic Auth в Postman\n\n1.1) Регистрация пользователя доступна кому-угодно. При регистрации пользователя должны быть выполнены следующие условия: У него обязательно должны быть username(email), name, sex(пол -boolean) и пароль\n\n1.2) Просто обрати внимание на AdminSaveDto и TrainerRegistrationDto и ты увидишь там все валидаторы  :) \n\n\n\n\n2) Добавлять новую группу можно двумя способами : Простым (некоторые значения заполняются дефолтно), и обычным, настоятельно рекомендую добавлять группу обычным способом \n**Важно**: При создании группы её продолжительность(тренировок) должна быть кратна часу т.е. минутные значения должны совпадать, какими будут секундные значения -неважно, сделал так, потому что тренеры работают часами в неделю.\nТакже написал условие, чтобы max кол-во людей в группе строго равнялось сумме мужских и женских раздевалок, иначе кто-то останется без шкафчика. \n\n2.1)Для каждой роли доступна команда Find all groups, для поиска всех групп\n\n3)Поиск Свободных тренеров совершается через 2 метода- \nодин получает аргументы типа: \"None\",что означает сортировка отсутствует, или поля, по которым нужно сортировать выборку.\n\nВторой метод принимает два параметра - время старта и время окончания занятий у группы, и возвращает тренеров, отсортированных по максимальному пересечению желаемого времени тренера и времени группы.\n\n3.1)И конечно же перегруженные тренеры не возвращаются\n\n4)В группу может записаться только посетитель, думаю, так будет правильно",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "undertale12345@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "undertale12345@",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8080/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Visitor   Registration",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "milana1@gmail.com",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "milana1",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\":\"milana12345678@gmail.com\",\r\n    \"password\":\"milana12345678\",\r\n    \"name\":\"Лана\",\r\n    \"sex\":\"False\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/visitor-management/visitor",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"visitor-management",
+						"visitor"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Trainer Registration",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\":\"andrew12345@gmail.com\",\r\n    \"password\":\"andrew12345\",\r\n    \"name\":\"Андрей\",\r\n    \"maxHoursWork\":\"80\",\r\n    \"minHoursWork\":\"30\",\r\n    \"preferedTimeDto\":{\r\n        \"startTime\":\"2:26:38\",\r\n        \"endTime\":\"9:00:34\"\r\n    }\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/trainer-management/trainers",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"trainer-management",
+						"trainers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Admin Registration",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "assasinqwe11",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "assasinqwe11@gmail.com",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\":\"lrifdar@gmail.com\",\r\n    \"password\":\"truekira12e3\",\r\n    \"name\":\"Лайт\",\r\n    \"secondName\":\"Ягами\"\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/admin-management/admins",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"admin-management",
+						"admins"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save new group",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "assasinqwe11",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "assasinqwe11@gmail.com",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"startTime\": \"23:16:23\",\r\n  \"endTime\": \"4:16:43\",\r\n  \"name\": \"N-211\",\r\n  \"groupCapacity\": 2,\r\n  \"maleMaxCount\": 1,\r\n  \"femaleMaxCount\":1 \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/group-management/groups",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"group-management",
+						"groups"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save new group simple",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/group-management/groups/A-111",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"group-management",
+						"groups",
+						"A-111"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Find Available Trainers with intersection sorting",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "assasinqwe11",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "assasinqwe11@gmail.com",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/trainer-management/trainers/sorted/intersection?timeStart=15:00:00&timeEnd=17:00:00",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"trainer-management",
+						"trainers",
+						"sorted",
+						"intersection"
+					],
+					"query": [
+						{
+							"key": "timeStart",
+							"value": "15:00:00"
+						},
+						{
+							"key": "timeEnd",
+							"value": "17:00:00"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Find  availible trainers",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "assasinqwe11",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "assasinqwe11@gmail.com",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/trainer-management/trainers?sortProperties=minWorkWeekHours,maxWorkWeekHours",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"trainer-management",
+						"trainers"
+					],
+					"query": [
+						{
+							"key": "sortProperties",
+							"value": "minWorkWeekHours,maxWorkWeekHours"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Find all groups",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "assasinqwe11",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "assasinqwe11@gmail.com",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/group-management/groups",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"group-management",
+						"groups"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Put trainer to group",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "assasinqwe11",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "assasinqwe11@gmail.com",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/group-management/groups/NF-211/trainer/firegod123@gmail.com",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"group-management",
+						"groups",
+						"NF-211",
+						"trainer",
+						"firegod123@gmail.com"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Visitor to Group",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "milana1@gmail.com",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "milana1",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/group-management/groups/NF-211/visitor",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"group-management",
+						"groups",
+						"NF-211",
+						"visitor"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "password",
+				"value": "assasinqwe11",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "assasinqwe11@gmail.com",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "username",
+			"value": "assasinqwe11@gmail.com"
+		},
+		{
+			"key": "password",
+			"value": "assasinqwe11"
+		}
+	]
+}
