@@ -22,7 +22,7 @@ import java.util.Set;
 public class Group {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column private Time startTime;
