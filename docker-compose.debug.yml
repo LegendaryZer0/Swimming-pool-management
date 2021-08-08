@@ -2,12 +2,12 @@ version: '3.4'
 
 services:
   swimpool:
-    image: handsome16/swimpool-spring-boot
+    image: handsome16/swim-pool-spring
     build:
       context: .
       dockerfile: ./Dockerfile
     environment:
       JAVA_OPTS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005,quiet=y
     ports:
-      - 8080:8080
-      - 5005:5005
+      - "8080:8080"
+      - "5005:5005"

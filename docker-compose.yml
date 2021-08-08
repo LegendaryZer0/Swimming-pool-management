@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   swimpool:
-    image: handsome16/swimpool-spring-boot
+    image: handsome16/swim-pool-spring
     build:
       context: .
       dockerfile: ./Dockerfile
