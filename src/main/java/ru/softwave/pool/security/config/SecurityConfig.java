@@ -13,7 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.softwave.pool.security.entrypoint.MyBasicAuthenticationEntryPoint;
 
 @Configuration
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, jsr250Enabled = true, securedEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
@@ -41,7 +41,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .authenticationEntryPoint(authenticationEntryPoint)
         .and()
         .authorizeRequests()
-        .antMatchers("/authenticate/**", "/**", "css/**", "js/**")
+        .antMatchers( "/**", "css/**", "js/**")
         .permitAll()
         .and()
         .formLogin()

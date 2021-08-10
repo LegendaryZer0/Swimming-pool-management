@@ -118,14 +118,15 @@ public class GroupServiceImpl implements GroupService {
       trainerService.saveTrainer(oldTrainer);
       group.setTrainer(trainer);
 
-      groupRepository.save(group);
+
 
     } else {
       addWorkHoursToTrainer(trainer, group);
       group.setTrainer(trainer);
       log.debug("saved group {}", group);
-      groupRepository.save(group);
+
     }
+    groupRepository.save(group);
   }
 
   private void addWorkHoursToTrainer(Trainer trainer, Group group) {

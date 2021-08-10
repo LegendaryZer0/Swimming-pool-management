@@ -16,6 +16,7 @@ import java.util.Comparator;
 @Setter
 public class AvailableTrainersPreferredTimeComparator implements Comparator<AvailableTrainersDto> {
 
+  private static final String RESULT_OF_COMPARE_LOG_MESSAGE = "i return {}";
   private Time groupTimeStart;
   private Time groupTimeEnd;
 
@@ -27,31 +28,27 @@ public class AvailableTrainersPreferredTimeComparator implements Comparator<Avai
 
   @Override
   public int compare(AvailableTrainersDto o1, AvailableTrainersDto o2) {
-    long o1TimeStartMs = convertTimeToSeconds(o1.getPreferedTimeDto().getStartTime());
-    long o1TimeEndMs = convertTimeToSeconds(o1.getPreferedTimeDto().getEndTime());
+    long o1TimeStartSec = convertTimeToSeconds(o1.getPreferedTimeDto().getStartTime());
+    long o1TimeEndMSec = convertTimeToSeconds(o1.getPreferedTimeDto().getEndTime());
 
-    long o2TimeStartMs = convertTimeToSeconds(o2.getPreferedTimeDto().getStartTime());
-    long o2TimeEndMs = convertTimeToSeconds(o2.getPreferedTimeDto().getEndTime());
-    log.trace(
+    long o2TimeStartSec = convertTimeToSeconds(o2.getPreferedTimeDto().getStartTime());
+    long o2TimeEndSec = convertTimeToSeconds(o2.getPreferedTimeDto().getEndTime());
+    log.info(
         "time start o1: {} time end o1: {} time start o2: {} time end o2: {}",
-        o1TimeStartMs,
-        o1TimeEndMs,
-        o2TimeStartMs,
-        o2TimeEndMs);
-
-    trainerTimeNightMode = o1TimeEndMs < o1TimeStartMs;
-    if (groupTimeEndSec < groupTimeStartSec) {
-      groupTimeNightMode = true;
-    } else {
-      trainerTimeNightMode = false;
-    }
+        o1TimeStartSec,
+        o1TimeEndMSec,
+        o2TimeStartSec,
+        o2TimeEndSec);
+    // Переход интервала времени через 0:00:00 и есть ночной мод/ночная смена
+    trainerTimeNightMode = o1TimeEndMSec < o1TimeStartSec;
+    groupTimeNightMode = groupTimeEndSec < groupTimeStartSec;
 
     long o1resolvedTime =
-        resolveTime(o1TimeStartMs, o1TimeEndMs, trainerTimeNightMode, groupTimeNightMode);
-    trainerTimeNightMode = o2TimeEndMs < o2TimeStartMs;
+        resolveTime(o1TimeStartSec, o1TimeEndMSec, trainerTimeNightMode, groupTimeNightMode);
+    trainerTimeNightMode = o2TimeEndSec < o2TimeStartSec;
     long o2resolvedTime =
-        resolveTime(o2TimeStartMs, o2TimeEndMs, trainerTimeNightMode, groupTimeNightMode);
-    log.trace(
+        resolveTime(o2TimeStartSec, o2TimeEndSec, trainerTimeNightMode, groupTimeNightMode);
+    log.info(
         "started comparing o1 {}, o2 {} of o1 name {} o2 name {}",
         o1resolvedTime,
         o2resolvedTime,
@@ -59,13 +56,13 @@ public class AvailableTrainersPreferredTimeComparator implements Comparator<Avai
         o2.getName());
 
     if (o2resolvedTime > o1resolvedTime) {
-      log.trace("i return {}", 1);
+      log.info(RESULT_OF_COMPARE_LOG_MESSAGE, 1);
       return 1;
     } else if (o2resolvedTime == o1resolvedTime) {
-      log.trace("i return {}", 0);
+      log.info(RESULT_OF_COMPARE_LOG_MESSAGE, 0);
       return 0;
     } else {
-      log.trace("i return {}", -1);
+      log.info(RESULT_OF_COMPARE_LOG_MESSAGE, -1);
       return -1;
     }
   }
@@ -77,79 +74,60 @@ public class AvailableTrainersPreferredTimeComparator implements Comparator<Avai
       boolean groupTimeNightMode) {
 
     if (trainerTimeNightMode && groupTimeNightMode) {
-
-      long minResult =
-          Math.min(preferTimeEnd, groupTimeEndSec)
-              - Math.max(preferTimeStart, groupTimeStartSec)
-              + Time.valueOf("23:59:99").getTime();
-      log.trace("i return Math.min result {}", minResult);
-      return minResult;
-    } else if ((!trainerTimeNightMode && groupTimeNightMode)) { // у группы ночная смена
-      if (preferTimeStart > groupTimeEndSec && preferTimeEnd < groupTimeStartSec) {
-        log.trace("returning min val");
-        return Long.MIN_VALUE;
-      } else if (preferTimeStart <= groupTimeEndSec && preferTimeEnd <= groupTimeStartSec) {
-        return groupTimeEndSec - preferTimeStart;
-      } else if (preferTimeStart >= groupTimeEndSec && preferTimeEnd >= groupTimeStartSec) {
-        return preferTimeEnd - groupTimeStartSec;
-      } else if (preferTimeStart <= groupTimeEndSec && preferTimeEnd >= groupTimeStartSec) {
-        return groupTimeEndSec - preferTimeStart + preferTimeEnd - groupTimeStartSec;
-      } else return preferTimeEnd - preferTimeStart;
-    } else if ((trainerTimeNightMode && !groupTimeNightMode)) {
-
-      if (groupTimeStartSec > preferTimeEnd && groupTimeEndSec < preferTimeStart) {
-        log.trace("return min val");
-        return Long.MIN_VALUE;
-      } else if (groupTimeStartSec <= preferTimeEnd && groupTimeEndSec <= preferTimeStart) {
-
-        return preferTimeEnd - groupTimeStartSec;
-      } else if (groupTimeStartSec >= preferTimeEnd && groupTimeEndSec >= preferTimeStart) {
-
-        return groupTimeEndSec - preferTimeStart;
-      } else if (groupTimeStartSec <= preferTimeEnd && groupTimeEndSec >= preferTimeStart) {
-        return preferTimeEnd - groupTimeStartSec + groupTimeEndSec - preferTimeStart;
-      } else return groupTimeEndSec - groupTimeStartSec;
-    } else if (!trainerTimeNightMode && !groupTimeNightMode) {
-
-      if ((preferTimeStart < groupTimeStartSec && preferTimeEnd < groupTimeStartSec)
-          || (preferTimeEnd > groupTimeEndSec && preferTimeStart > groupTimeEndSec)) {
-        return Long.MIN_VALUE;
-      }
-
-      log.trace(
-          "they aboth in day mode {}",
-          Math.min(preferTimeEnd, groupTimeEndSec) - Math.max(preferTimeStart, groupTimeStartSec));
-      log.trace("min time {}", Math.min(preferTimeEnd, groupTimeEndSec));
-      log.trace("max time {}", Math.max(preferTimeStart, groupTimeStartSec));
-      return Math.min(preferTimeEnd, groupTimeEndSec)
-          - Math.max(preferTimeStart, groupTimeStartSec);
+      return calculateIntersectionWhenBothInNightMode(preferTimeStart, preferTimeEnd);
     }
-    return Long.MIN_VALUE;
+    if ((!trainerTimeNightMode && groupTimeNightMode)) {
+      return calculateIntersectionTimeWhenOneInNightMode(
+          preferTimeStart, preferTimeEnd, groupTimeEndSec, groupTimeStartSec, "returning min val");
+    }
+    if (trainerTimeNightMode) {
+      return calculateIntersectionTimeWhenOneInNightMode(
+          groupTimeStartSec, groupTimeEndSec, preferTimeEnd, preferTimeStart, "return min val");
+    }
+
+    return calculateIntersectionWhenBothInDayMode(preferTimeStart, preferTimeEnd);
+  }
+
+  private long calculateIntersectionWhenBothInNightMode(long preferTimeStart, long preferTimeEnd) {
+    long minResult =
+        Math.min(preferTimeEnd, groupTimeEndSec)
+            - Math.max(preferTimeStart, groupTimeStartSec)
+            + Time.valueOf("23:59:99").getTime();
+    log.info("i return Math.min result {}", minResult);
+    return minResult;
+  }
+
+  private long calculateIntersectionWhenBothInDayMode(long preferTimeStart, long preferTimeEnd) {
+    if ((preferTimeStart < groupTimeStartSec && preferTimeEnd < groupTimeStartSec)
+        || (preferTimeEnd > groupTimeEndSec && preferTimeStart > groupTimeEndSec)) {
+      return Long.MIN_VALUE;
+    }
+    long intersectionResult =
+        Math.min(preferTimeEnd, groupTimeEndSec) - Math.max(preferTimeStart, groupTimeStartSec);
+    log.info("they aboth in day mode {}", intersectionResult);
+    log.info("min time {}", Math.min(preferTimeEnd, groupTimeEndSec));
+    log.info("max time {}", Math.max(preferTimeStart, groupTimeStartSec));
+    return intersectionResult;
+  }
+
+  private long calculateIntersectionTimeWhenOneInNightMode(
+      long dailyTimeStart, long dailyTimeEnd, long nightTimeEnd, long nightTimeStart, String s) {
+    if (dailyTimeStart > nightTimeEnd && dailyTimeEnd < nightTimeStart) {
+      log.info(s);
+      return Long.MIN_VALUE;
+    }
+    if (dailyTimeStart <= nightTimeEnd && dailyTimeEnd <= nightTimeStart) {
+      return nightTimeEnd - dailyTimeStart;
+    }
+    if (dailyTimeStart >= nightTimeEnd) {
+      return dailyTimeEnd - nightTimeStart;
+    }
+    return nightTimeEnd - dailyTimeStart + dailyTimeEnd - nightTimeStart;
   }
 
   private long convertTimeToSeconds(Time time) {
     LocalTime localTime = time.toLocalTime();
-    log.trace(localTime.toString());
-    return localTime.getHour() * 3600 + localTime.getMinute() * 60 + localTime.getSecond();
-  }
-
-  @Deprecated
-  private long resolveTime(long preferTimeStart, long preferTimeEnd) {
-
-    if ((preferTimeStart > groupTimeEndSec && preferTimeEnd < groupTimeStartSec)
-        || ((preferTimeStart == groupTimeEndSec) && (preferTimeEnd == groupTimeStartSec))) {
-      log.trace("i return min value {}", Long.MIN_VALUE + 1);
-      return Long.MIN_VALUE;
-    } else if (preferTimeStart > groupTimeStartSec
-        && preferTimeEnd > groupTimeStartSec
-        && preferTimeStart > preferTimeEnd) {
-      log.trace("i return doubled intersect val");
-      return preferTimeEnd - groupTimeStartSec + groupTimeEndSec - preferTimeStart;
-    } else {
-      long minResult =
-          Math.min(preferTimeEnd, groupTimeEndSec) - Math.max(preferTimeStart, groupTimeStartSec);
-      log.trace("i return Math.min result {}", minResult);
-      return minResult;
-    }
+    log.info(localTime.toString());
+    return (long) localTime.getHour() * 3600 + localTime.getMinute() * 60 + localTime.getSecond();
   }
 }
