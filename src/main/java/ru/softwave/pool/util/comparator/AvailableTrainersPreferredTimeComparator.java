@@ -33,7 +33,7 @@ public class AvailableTrainersPreferredTimeComparator implements Comparator<Avai
 
     long o2TimeStartSec = convertTimeToSeconds(o2.getPreferedTimeDto().getStartTime());
     long o2TimeEndSec = convertTimeToSeconds(o2.getPreferedTimeDto().getEndTime());
-    log.info(
+    log.trace(
         "time start o1: {} time end o1: {} time start o2: {} time end o2: {}",
         o1TimeStartSec,
         o1TimeEndMSec,
@@ -48,21 +48,21 @@ public class AvailableTrainersPreferredTimeComparator implements Comparator<Avai
     trainerTimeNightMode = o2TimeEndSec < o2TimeStartSec;
     long o2resolvedTime =
         resolveTime(o2TimeStartSec, o2TimeEndSec, trainerTimeNightMode, groupTimeNightMode);
-    log.info(
-        "started comparing o1 {}, o2 {} of o1 name {} o2 name {}",
+    log.trace(
+        "started comparing o1 {}, o2 {} of o1 email {} o2 e,ail {}",
         o1resolvedTime,
         o2resolvedTime,
-        o1.getName(),
-        o2.getName());
+        o1.getEmail(),
+        o2.getEmail());
 
     if (o2resolvedTime > o1resolvedTime) {
-      log.info(RESULT_OF_COMPARE_LOG_MESSAGE, 1);
+      log.trace(RESULT_OF_COMPARE_LOG_MESSAGE, 1);
       return 1;
     } else if (o2resolvedTime == o1resolvedTime) {
-      log.info(RESULT_OF_COMPARE_LOG_MESSAGE, 0);
+      log.trace(RESULT_OF_COMPARE_LOG_MESSAGE, 0);
       return 0;
     } else {
-      log.info(RESULT_OF_COMPARE_LOG_MESSAGE, -1);
+      log.trace(RESULT_OF_COMPARE_LOG_MESSAGE, -1);
       return -1;
     }
   }
@@ -89,11 +89,12 @@ public class AvailableTrainersPreferredTimeComparator implements Comparator<Avai
   }
 
   private long calculateIntersectionWhenBothInNightMode(long preferTimeStart, long preferTimeEnd) {
+    log.trace("converted 24 hours in seconds {}  prefer time start {}  prefer time end  {}",convertTimeToSeconds(Time.valueOf("23:59:99")),preferTimeStart,preferTimeEnd);
     long minResult =
         Math.min(preferTimeEnd, groupTimeEndSec)
             - Math.max(preferTimeStart, groupTimeStartSec)
-            + Time.valueOf("23:59:99").getTime();
-    log.info("i return Math.min result {}", minResult);
+            + convertTimeToSeconds(Time.valueOf("23:59:59"));
+    log.trace("they aboth in night mode {}", minResult);
     return minResult;
   }
 
@@ -104,16 +105,16 @@ public class AvailableTrainersPreferredTimeComparator implements Comparator<Avai
     }
     long intersectionResult =
         Math.min(preferTimeEnd, groupTimeEndSec) - Math.max(preferTimeStart, groupTimeStartSec);
-    log.info("they aboth in day mode {}", intersectionResult);
-    log.info("min time {}", Math.min(preferTimeEnd, groupTimeEndSec));
-    log.info("max time {}", Math.max(preferTimeStart, groupTimeStartSec));
+    log.trace("they aboth in day mode {}", intersectionResult);
+    log.trace("min time {}", Math.min(preferTimeEnd, groupTimeEndSec));
+    log.trace("max time {}", Math.max(preferTimeStart, groupTimeStartSec));
     return intersectionResult;
   }
 
   private long calculateIntersectionTimeWhenOneInNightMode(
       long dailyTimeStart, long dailyTimeEnd, long nightTimeEnd, long nightTimeStart, String s) {
     if (dailyTimeStart > nightTimeEnd && dailyTimeEnd < nightTimeStart) {
-      log.info(s);
+      log.trace(s);
       return Long.MIN_VALUE;
     }
     if (dailyTimeStart <= nightTimeEnd && dailyTimeEnd <= nightTimeStart) {
@@ -127,7 +128,7 @@ public class AvailableTrainersPreferredTimeComparator implements Comparator<Avai
 
   private long convertTimeToSeconds(Time time) {
     LocalTime localTime = time.toLocalTime();
-    log.info(localTime.toString());
+    log.trace(localTime.toString());
     return (long) localTime.getHour() * 3600 + localTime.getMinute() * 60 + localTime.getSecond();
   }
 }
