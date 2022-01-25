@@ -11,10 +11,7 @@ import javax.persistence.Entity;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
 @SuperBuilder
 @Entity
 public class Admin extends User {
-  private String name;
-  private String surname;
 }

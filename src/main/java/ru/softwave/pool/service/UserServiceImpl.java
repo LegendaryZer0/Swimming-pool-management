@@ -3,12 +3,15 @@ package ru.softwave.pool.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import ru.softwave.pool.exception.ErrorType;
+import ru.softwave.pool.exception.Exc;
 import ru.softwave.pool.model.entity.User;
 import ru.softwave.pool.repo.UserRepository;
 import ru.softwave.pool.util.smtp.EmailUtil;
 import ru.softwave.pool.util.smtp.MailsGenerator;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -41,5 +44,15 @@ public class UserServiceImpl implements UserService {
             .orElseThrow(() -> new EntityNotFoundException("There is no user to confirm email"));
     user.setIsConfirmed(Boolean.TRUE);
     userRepository.save(user);
+  }
+
+  @Override
+  public User findOrThrow(Long userId) {
+    return userRepository.findById(userId).orElseThrow(Exc.sup(ErrorType.ENTITY_NOT_FOUND,"Сущность юзера не найдена"));
+  }
+
+  @Override
+  public Optional<User> getUser(String login) {
+    return userRepository.getUserByEmail(login);
   }
 }

@@ -11,6 +11,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.softwave.pool.service.UserService;
 
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.BaseMatcher.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;

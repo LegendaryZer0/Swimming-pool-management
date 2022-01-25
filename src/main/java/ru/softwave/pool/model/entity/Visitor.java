@@ -27,8 +27,6 @@ public class Visitor extends User {
   @ManyToMany(cascade = CascadeType.ALL)
   private Set<Group> groups;
 
-  @Getter @Setter private String name;
-
   private boolean sex;
 
   public boolean getSex() {

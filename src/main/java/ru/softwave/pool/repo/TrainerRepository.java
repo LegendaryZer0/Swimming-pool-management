@@ -12,6 +12,7 @@ import java.util.Optional;
 @Repository
 public interface TrainerRepository extends JpaRepository<Trainer, Long> {
 
+
   @Query("from Trainer t where t.currentWorkWeekHours < t.maxWorkWeekHours")
   List<Trainer> findAllWhereCurrentWorkHoursLessThanMaxWorkHours(Sort sort);
 

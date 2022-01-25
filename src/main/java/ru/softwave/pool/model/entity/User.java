@@ -30,6 +30,9 @@ public class User {
   @Enumerated(EnumType.STRING)
   private Role role;
 
+  private String name;
+  private String surname;
+
   private Boolean isConfirmed;
 
   @JsonIgnore
